@@ -30,14 +30,14 @@ def enqueue_song(songName):
 def play_song(songName):
 	tracks = client.get('/tracks',charset="utf-8",q=songName )
 	stream_url = client.get(tracks[0].stream_url, allow_redirects=False)
-	urllib.urlretrieve(stream_url.location, "tmp/song.mp3")
+	urllib.urlretrieve(stream_url.location, "/home/pi/volumeshit/lambda-separator/tmp/song.mp3")
 	system("mpg321 tmp/song.mp3 &")
 
 @app.route("/playSound")
 def playSound():
-	print "skipped"
-	skip();
-	return "done"
+	return skip();
+	
+
 @app.route("/", methods=['POST'])
 def twilioIndex():
 	resp = twilio.twiml.Response()
@@ -45,16 +45,17 @@ def twilioIndex():
 	if songName == "skip":
 		skip()
 	enqueue_song(songName)
-	return "done"
 	
 
 @app.route("/skip")
 def skip():
 	global queue_of_eternal_light
 	system("pkill mpg321")
+	song_gotten = ""
 	if not queue_of_eternal_light.empty():
+		song_gotten = queue_of_eternal_light.get()
 		play_song(queue_of_eternal_light.get())
-	return "done"
+	return "Now playing:" + str(song_gotten) + "\nIn the queue:" + str(queue_of_eternal_light)
 
 @app.route("/<string:songName>")
 def index(songName):
