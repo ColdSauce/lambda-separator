@@ -21,8 +21,6 @@ client = soundcloud.Client(client_id = SOUND_CLOUD_CLIENT_ID,
                            username= USERNAME,
                            password=PASSWORD)
 
-		
-
 def enqueue_song(songName):
 	global queue_of_eternal_light
 	queue_of_eternal_light.put(songName)
@@ -30,7 +28,7 @@ def enqueue_song(songName):
 def play_song(songName):
 	tracks = client.get('/tracks',charset="utf-8",q=songName )
 	stream_url = client.get(tracks[0].stream_url, allow_redirects=False)
-	urllib.urlretrieve(stream_url.location, "/home/pi/volumeshit/lambda-separator/tmp/song.mp3")
+	urllib.urlretrieve(stream_url.location, "tmp/song.mp3")
 	system("mpg321 tmp/song.mp3 &")
 
 @app.route("/playSound")
@@ -57,10 +55,11 @@ def skip():
 		play_song(queue_of_eternal_light.get())
 	return "Now playing:" + str(song_gotten) + "\nIn the queue:" + str(queue_of_eternal_light)
 
-@app.route("/<string:songName>")
-def index(songName):
-	enqueue_song(songName)
-	return "done"
+@app.route("/song/", methods=['POST'])
+def index():
+	#enqueue_song(songName)
+        content = request.json
+	return str(content)
 
 if __name__ == "__main__":
 	app.run('0.0.0.0', port = 7573, debug=True)
